@@ -5,7 +5,7 @@ import { getLoginUserUsingGet } from '@/api/yonghumokuaixiangguanjiekou.ts'
 export const useLoginUserStore =
   defineStore('loginUser', () => {
     // 定义用户登录信息
-    const loginUser = ref<any>({
+    const loginUser = ref<API.UserVO>({
       userName: "未登录",
     })
 

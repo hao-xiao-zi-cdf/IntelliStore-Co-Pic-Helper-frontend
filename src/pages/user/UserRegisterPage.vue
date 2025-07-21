@@ -64,7 +64,7 @@ const formState = reactive<API.UserRegisterDTO>({
   userPassword: ''
 });
 const onFinish = async (values: any) => {
-  const res = await userRegisterUsingPost(formState);
+  const res = await userRegisterUsingPost(values);
   if(res.data.code === 200 && res.data.data ){
     message.success("注册成功");
     router.push({

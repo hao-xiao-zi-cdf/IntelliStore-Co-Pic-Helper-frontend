@@ -36,14 +36,13 @@
           <a-button type="primary" href="/user/login">登录</a-button>
         </div>
       </a-col>
-
     </a-row>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { h, ref } from 'vue'
-import { MailOutlined, AppstoreOutlined, LogoutOutlined } from '@ant-design/icons-vue'
+import { computed, h, ref } from 'vue'
+import { MailOutlined, AppstoreOutlined, LogoutOutlined,HomeOutlined } from '@ant-design/icons-vue'
 import type { MenuProps } from 'ant-design-vue'
 import { message } from 'ant-design-vue'
 
@@ -53,25 +52,38 @@ import { userLogoutUsingPost } from '@/api/yonghumokuaixiangguanjiekou.ts'
 
 const loginUserStore = useLoginUserStore()
 loginUserStore.fetchLoginUser()
-const items = ref<MenuProps['items']>([
+// 菜单列表
+const originItems = [
   {
     key: '/',
-    icon: () => h(MailOutlined),
+    icon: () => h(HomeOutlined),
     label: '主页',
     title: '主页',
   },
   {
     key: '/admin/userManage',
-    icon: () => h(AppstoreOutlined),
     label: '用户管理',
     title: '用户管理',
   },
-  {
-    key: '',
-    label: h('a', { href: 'https://baidu.com', target: '_blank' }, '百度'),
-    title: '百度',
-  },
-])
+]
+
+// 过滤菜单项
+const filterMenus = (menus = [] as MenuProps['items']) => {
+  return menus?.filter((menu) => {
+    if (menu?.key?.toString().startsWith('/admin')) {
+      const loginUser = loginUserStore.loginUser
+      if (!loginUser || loginUser.userRole !== "admin") {
+        return false
+      }
+    }
+    return true
+  })
+}
+
+
+// 展示在菜单的路由数组
+const items = computed<MenuProps['items']>(() => filterMenus(originItems))
+
 
 const router = useRouter()
 //路由跳转事件

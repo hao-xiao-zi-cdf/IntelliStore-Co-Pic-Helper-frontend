@@ -6,7 +6,7 @@ import router from '@/router'
 let firstFetchLoginUser = true
 
 /**
- * 全局权限校验
+ * 全局权限校验，每次切换路由时执行
  */
 router.beforeEach(async (to, from, next) => {
   const loginUserStore = useLoginUserStore()
@@ -25,5 +25,5 @@ router.beforeEach(async (to, from, next) => {
       return
     }
   }
-  next()
+  next() // 默认放行，跳转到原本要访问的页面
 })

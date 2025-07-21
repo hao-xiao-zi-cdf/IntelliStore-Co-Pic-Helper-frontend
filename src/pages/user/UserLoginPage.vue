@@ -36,9 +36,10 @@ const formState = reactive<API.UserLoginDTO>({
   userAccount: '',
   userPassword: ''
 });
+
 const onFinish = async (values: any) => {
   const res = await userLoginUsingPost(values);
-  if(res.data.code === 0 || res.data.data){
+  if(res.data.code === 200 || res.data.data){
     await useLoginUserStore().fetchLoginUser()
     message.success("登陆成功");
     router.push({

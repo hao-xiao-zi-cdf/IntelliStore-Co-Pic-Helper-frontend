@@ -27,15 +27,10 @@
     </a-form>
 
     <!--    表格-->
-    <a-table
-      :columns="columns"
-      :data-source="dataList"
-      :pagination="pagination"
-      @change="doTableChange"
-    >
+    <a-table :columns="columns" :data-source="dataList" :pagination="pagination" @change="doTableChange">
       <template #bodyCell="{ column, record }">
         <template v-if="column.dataIndex === 'userAvatar'">
-          <a-image :src="record.userAvatar" width="45px"></a-image>
+          <a-image :src="record.userAvatar" width="40px"></a-image>
         </template>
         <template v-else-if="column.dataIndex === 'userRole'">
           <div v-if="record.userRole === 'user'">
@@ -103,8 +98,19 @@ const total = ref(0)
 // 搜索条件
 const searchParams = reactive<API.UserQueryDTO>({
   current: 1,
-  pageSize: 2,
+  pageSize: 5,
   userRole: ""
+})
+
+// 分页参数
+const pagination = computed(() => {
+  return {
+    current: searchParams.current ?? 1,
+    pageSize: searchParams.pageSize ?? 10,
+    total: total.value,
+    showSizeChanger: true,
+    showTotal: (total) => `共 ${total} 条`,
+  }
 })
 
 // 获取数据
@@ -120,23 +126,17 @@ const fetchData = async () => {
   }
 }
 
+// 页面加载时请求一次
+onMounted(() => {
+  fetchData()
+})
+
 // 表格变化处理
 const doTableChange = (page: any) => {
   searchParams.current = page.current
   searchParams.pageSize = page.pageSize
   fetchData()
 }
-
-// 分页参数
-const pagination = computed(() => {
-  return {
-    current: searchParams.current ?? 1,
-    pageSize: searchParams.pageSize ?? 10,
-    total: total.value,
-    showSizeChanger: true,
-    showTotal: (total) => `共 ${total} 条`,
-  }
-})
 
 // 获取数据
 const doSearch = () => {
@@ -146,11 +146,11 @@ const doSearch = () => {
 }
 
 // 删除数据
-const doDelete = async (id: string) => {
+const doDelete = async (id: number) => {
   if (!id) {
     return
   }
-  const res = await deleteUserUsingDelete({ id: Number(id) })
+  const res = await deleteUserUsingDelete({ id: id })
   if (res.data.code === 200) {
     message.success('删除成功')
     // 刷新数据
@@ -159,9 +159,4 @@ const doDelete = async (id: string) => {
     message.error('删除失败')
   }
 }
-
-// 页面加载时请求一次
-onMounted(() => {
-  fetchData()
-})
 </script>
