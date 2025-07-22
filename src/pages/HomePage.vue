@@ -2,74 +2,88 @@
   <div id="homePage">
     <!-- 搜索框 -->
     <div class="search-bar">
-      <a-input-search
-        placeholder="从海量图片中搜索"
-        v-model:value="searchParams.searchText"
-        enter-button="搜索"
-        size="large"
-        @search="doSearch"
-      />
+      <div class="search-wrapper">
+        <a-input-search
+          placeholder="从海量图片中搜索"
+          v-model:value="searchParams.searchText"
+          enter-button="搜索"
+          size="large"
+          @search="doSearch"
+        />
+      </div>
     </div>
 
     <!-- 分类 + 标签 -->
-    <a-tabs v-model:activeKey="selectedCategory" @change="doSearch">
-      <a-tab-pane key="all" tab="全部" />
-      <a-tab-pane v-for="category in categoryList" :key="category" :tab="category" />
-    </a-tabs>
-    <div class="tag-bar">
-      <span style="margin-right: 8px">标签：</span>
-      <a-space :size="[0, 8]" wrap>
-        <a-checkable-tag
-          v-for="(tag, index) in tagList"
-          :key="tag"
-          v-model:checked="selectedTagList[index]"
-          @change="doSearch"
-        >
-          {{ tag }}
-        </a-checkable-tag>
-      </a-space>
+    <div class="category-tag-wrapper">
+      <a-tabs v-model:activeKey="selectedCategory" @change="doSearch" class="animated-tabs">
+        <a-tab-pane key="all" tab="全部" />
+        <a-tab-pane
+          v-for="category in categoryList"
+          :key="category"
+          :tab="category"
+        />
+      </a-tabs>
+
+      <div class="tag-bar">
+        <span class="tag-label">标签：</span>
+        <a-space :size="[0, 8]" wrap>
+          <a-checkable-tag
+            v-for="(tag, index) in tagList"
+            :key="tag"
+            v-model:checked="selectedTagList[index]"
+            @change="doSearch"
+            class="animated-tag"
+          >
+            {{ tag }}
+          </a-checkable-tag>
+        </a-space>
+      </div>
     </div>
 
     <!-- 图片列表 -->
     <a-list
-      :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
+      class="picture-list"
+      :grid="{ gutter: 8, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
       :data-source="dataList"
       :pagination="pagination"
       :loading="loading"
     >
       <template #renderItem="{ item: picture }">
-        <a-list-item style="padding: 0">
-          <!-- 单张图片 -->
-          <a-card hoverable @click="doClickPicture(picture)">
+        <a-list-item class="picture-card-wrapper">
+          <a-card
+            hoverable
+            class="picture-card"
+            @click="doClickPicture(picture)"
+            :bodyStyle="{ padding: '12px' }"
+          >
             <template #cover>
-              <img
-                style="height: 180px; object-fit: cover"
-                :alt="picture.name"
-                :src="picture.url"
-              />
+              <div class="image-container">
+                <img
+                  class="image"
+                  :alt="picture.name"
+                  :src="picture.thumbnailUrl ?? picture.url"
+                  loading="lazy"
+                />
+              </div>
             </template>
             <a-card-meta :title="picture.name">
               <template #description>
                 <a-flex>
-                  <a-tag color="green" v-if="picture.tags.length === 0">
-                    {{ '默认' }}
-                  </a-tag>
+                  <a-tag color="green" v-if="picture.tags.length === 0">默认</a-tag>
                   <a-tag v-else v-for="tag in picture.tags" :key="tag" color="blue">
-                      {{ tag }}
+                    {{ tag }}
                   </a-tag>
                 </a-flex>
               </template>
             </a-card-meta>
           </a-card>
         </a-list-item>
-
       </template>
     </a-list>
   </div>
 </template>
 
 <script setup lang="ts">
-// 数据
 import { computed, onMounted, reactive, ref } from 'vue'
 import { getPictureVoListByCacheUsingPost, listPictureTagCategoryUsingGet } from '@/api/tupianxiangguanjiekou.ts'
 import { message } from 'ant-design-vue'
@@ -79,7 +93,6 @@ const dataList = ref<any>([])
 const total = ref(0)
 const loading = ref(true)
 
-// 搜索条件
 const searchParams = reactive<API.PictureQueryDTO>({
   current: 1,
   pageSize: 12,
@@ -87,13 +100,11 @@ const searchParams = reactive<API.PictureQueryDTO>({
   sortOrder: 'descend',
 })
 
-// 分页参数
 const pagination = computed(() => {
   return {
     current: searchParams.current ?? 1,
     pageSize: searchParams.pageSize ?? 10,
     total: total.value,
-    // 切换页号时，会修改搜索参数并获取数据
     onChange: (page, pageSize) => {
       searchParams.current = page
       searchParams.pageSize = pageSize
@@ -102,19 +113,17 @@ const pagination = computed(() => {
   }
 })
 
-// 页面加载时请求一次
 onMounted(() => {
   fetchData()
+  getTagCategoryOptions()
 })
 
 const doSearch = () => {
-  // 重置搜索条件
   searchParams.current = 1
   fetchData()
 }
 
 const router = useRouter()
-// 跳转至图片详情
 const doClickPicture = (picture) => {
   router.push({
     path: `/picture/${picture.id}`,
@@ -126,11 +135,9 @@ const selectedCategory = ref<string>('all')
 const tagList = ref<string[]>([])
 const selectedTagList = ref<string[]>([])
 
-// 获取标签和分类选项
 const getTagCategoryOptions = async () => {
   const res = await listPictureTagCategoryUsingGet()
   if (res.data.code === 200 && res.data.data) {
-    // 转换成下拉选项组件接受的格式
     categoryList.value = res.data.data.categoryList ?? []
     tagList.value = res.data.data.tagList ?? []
   } else {
@@ -138,10 +145,8 @@ const getTagCategoryOptions = async () => {
   }
 }
 
-// 获取数据
 const fetchData = async () => {
   loading.value = true
-  // 转换搜索参数
   const params = {
     ...searchParams,
     tags: [],
@@ -163,21 +168,156 @@ const fetchData = async () => {
   }
   loading.value = false
 }
-
-
-onMounted(() => {
-  getTagCategoryOptions()
-})
-
-
 </script>
 
 <style scoped>
-#homePage .search-bar {
-  max-width: 480px;
-  margin: 0 auto 16px;
+#homePage {
+  background: linear-gradient(to right, #f0f2f5, #e6f7ff);
+  min-height: 100vh;
+  padding: 24px;
 }
-#homePage .tag-bar {
-  margin-bottom: 20px;
+
+.search-bar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.search-wrapper {
+  width: 100%;
+  max-width: 600px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
+  animation: fadeInDown 0.5s ease;
+}
+
+.search-wrapper :deep(.ant-input-search) {
+  border-radius: 10px;
+}
+
+.search-wrapper :deep(.ant-input-search-button) {
+  border-radius: 0 10px 10px 0;
+  transition: all 0.3s ease;
+}
+
+.search-wrapper :deep(.ant-input-search-button:hover) {
+  background: #40a9ff !important;
+  color: white;
+}
+
+.category-tag-wrapper {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.animated-tabs {
+  margin-bottom: 16px;
+}
+
+.tag-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  animation: fadeInUp 1s ease-in;
+}
+
+.tag-label {
+  margin-right: 8px;
+  font-weight: bold;
+  color: #555;
+}
+
+.animated-tag {
+  transition: all 0.3s;
+  padding: 4px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+
+.animated-tag:hover {
+  transform: scale(1.05);
+  color: #1890ff;
+  background-color: #e6f7ff;
+}
+
+.picture-list {
+  animation: fadeInUp 1s ease-in;
+}
+
+.picture-card-wrapper {
+  padding: 4px !important; /* 缩小列表项之间的间距 */
+}
+
+.picture-card {
+  border-radius: 12px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.picture-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.image-container {
+  overflow: hidden;
+}
+
+.image {
+  height: 180px;
+  width: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease, box-shadow 0.3s ease;
+  border-radius: 4px;
+}
+
+.picture-card:hover .image {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(24, 144, 255, 0.4);
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
