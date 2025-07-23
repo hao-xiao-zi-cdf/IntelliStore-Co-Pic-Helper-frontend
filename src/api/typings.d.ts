@@ -164,6 +164,11 @@ declare namespace API {
     id: number
   }
 
+  type getMySpaceUsingGETParams = {
+    spaceType?: number
+    userId?: number
+  }
+
   type GetoutPaintingTaskResponse = {
     output?: Output1
     requestId?: string

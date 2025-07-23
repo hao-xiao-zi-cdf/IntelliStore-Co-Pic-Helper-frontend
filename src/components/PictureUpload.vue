@@ -23,8 +23,10 @@ import { ref } from 'vue'
 import { uploadPictureUsingPost1 } from '@/api/tupianxiangguanjiekou.ts'
 interface Props {
   picture?: API.PictureVO
+  spaceId?: number
   onSuccess?: (newPicture: API.PictureVO) => void
 }
+
 const props = defineProps<Props>()
 
 const beforeUpload = (file: File) => {
@@ -39,7 +41,9 @@ const beforeUpload = (file: File) => {
   return isJpgOrPng && isLt2M
 }
 
-const params = props.picture ? { id: props.picture.id } : {}
+// 上传时传递 spaceId
+const params: API.PictureUploadDTO = props.picture ? { id: props.picture.id } : {}
+params.spaceId = props.spaceId;
 
 const loading = ref<boolean>(false)
 

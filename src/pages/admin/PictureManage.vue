@@ -320,6 +320,7 @@ const pagination = computed(() => {
 const fetchData = async () => {
   const res = await getPictureListUsingPost({
     ...searchParams,
+    nullSpaceId: true,
   })
   message.success('获取数据成功')
   if (res.data.code === 200 && res.data.data) {

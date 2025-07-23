@@ -10,6 +10,9 @@ import AddPictureBatchPage from '@/pages/admin/AddPictureBatchPage.vue'
 import UserInfoPage from '@/pages/user/UserInfoPage.vue'
 import SpaceManagePage from '@/pages/admin/SpaceManagePage.vue'
 import AddSpacePage from '@/pages/AddSpacePage.vue'
+import MySpacePage from '@/pages/MySpacePage.vue'
+import SpaceDetailPage from '@/pages/SpaceDetailPage.vue'
+import SearchPicturePage from '@/pages/SearchPicturePage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -70,9 +73,22 @@ const router = createRouter({
       name: '创建空间',
       component: AddSpacePage,
     },
-
-
-
+    {
+      path: '/space/my',
+      name: '我的空间',
+      component: MySpacePage,
+    },
+    {
+      path: '/space/:id',
+      name: '空间详情',
+      component: SpaceDetailPage,
+      props: true,
+    },
+    {
+      path: '/picture/search',
+      name: '图片搜索',
+      component: SearchPicturePage,
+    }
   ],
 })
 

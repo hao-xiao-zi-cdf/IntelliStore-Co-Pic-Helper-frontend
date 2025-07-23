@@ -41,45 +41,14 @@
     </div>
 
     <!-- 图片列表 -->
-    <a-list
-      class="picture-list"
-      :grid="{ gutter: 8, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
-      :data-source="dataList"
-      :pagination="pagination"
-      :loading="loading"
-    >
-      <template #renderItem="{ item: picture }">
-        <a-list-item class="picture-card-wrapper">
-          <a-card
-            hoverable
-            class="picture-card"
-            @click="doClickPicture(picture)"
-            :bodyStyle="{ padding: '12px' }"
-          >
-            <template #cover>
-              <div class="image-container">
-                <img
-                  class="image"
-                  :alt="picture.name"
-                  :src="picture.thumbnailUrl ?? picture.url"
-                  loading="lazy"
-                />
-              </div>
-            </template>
-            <a-card-meta :title="picture.name">
-              <template #description>
-                <a-flex>
-                  <a-tag color="green" v-if="picture.tags.length === 0">默认</a-tag>
-                  <a-tag v-else v-for="tag in picture.tags" :key="tag" color="blue">
-                    {{ tag }}
-                  </a-tag>
-                </a-flex>
-              </template>
-            </a-card-meta>
-          </a-card>
-        </a-list-item>
-      </template>
-    </a-list>
+    <PictureList :dataList="dataList" :loading="loading" @clickPicture="doClickPicture" @delete="handleDelete"></PictureList>
+    <a-pagination
+      style="text-align: right"
+      v-model:current="searchParams.current"
+      v-model:pageSize="searchParams.pageSize"
+      :total="total"
+      :show-total="() => `共 ${total} 条`"
+      @change="onPageChange" />
   </div>
 </template>
 
@@ -88,6 +57,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { getPictureVoListByCacheUsingPost, listPictureTagCategoryUsingGet } from '@/api/tupianxiangguanjiekou.ts'
 import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
+import PictureList from '@/components/PictureList.vue'
 
 const dataList = ref<any>([])
 const total = ref(0)
@@ -100,18 +70,12 @@ const searchParams = reactive<API.PictureQueryDTO>({
   sortOrder: 'descend',
 })
 
-const pagination = computed(() => {
-  return {
-    current: searchParams.current ?? 1,
-    pageSize: searchParams.pageSize ?? 10,
-    total: total.value,
-    onChange: (page, pageSize) => {
-      searchParams.current = page
-      searchParams.pageSize = pageSize
-      fetchData()
-    },
-  }
-})
+// 分页参数
+const onPageChange = (page, pageSize) => {
+  searchParams.current = page
+  searchParams.pageSize = pageSize
+  fetchData()
+}
 
 onMounted(() => {
   fetchData()
@@ -167,6 +131,11 @@ const fetchData = async () => {
     message.error('获取数据失败，' + res.data.message)
   }
   loading.value = false
+}
+
+const handleDelete = (picture) => {
+  // 重新刷新数据
+  fetchData()
 }
 </script>
 
@@ -247,77 +216,5 @@ const fetchData = async () => {
   transform: scale(1.05);
   color: #1890ff;
   background-color: #e6f7ff;
-}
-
-.picture-list {
-  animation: fadeInUp 1s ease-in;
-}
-
-.picture-card-wrapper {
-  padding: 4px !important; /* 缩小列表项之间的间距 */
-}
-
-.picture-card {
-  border-radius: 12px;
-  margin-bottom: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.picture-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
-
-.image-container {
-  overflow: hidden;
-}
-
-.image {
-  height: 180px;
-  width: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease, box-shadow 0.3s ease;
-  border-radius: 4px;
-}
-
-.picture-card:hover .image {
-  transform: scale(1.05);
-  box-shadow: 0 0 12px rgba(24, 144, 255, 0.4);
-}
-
-/* 动画效果 */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 </style>
