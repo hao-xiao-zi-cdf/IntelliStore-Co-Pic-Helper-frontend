@@ -184,6 +184,11 @@ declare namespace API {
     id: number
   }
 
+  type getSpaceByIdUsingGETParams = {
+    /** id */
+    id: number
+  }
+
   type getUserUsingGETParams = {
     /** id */
     id: number
@@ -197,6 +202,18 @@ declare namespace API {
   type ImageSearchResult = {
     fromUrl?: string
     thumbUrl?: string
+  }
+
+  type listSpaceUsingGETParams = {
+    current?: number
+    id?: number
+    pageSize?: number
+    sortField?: string
+    sortOrder?: string
+    spaceLevel?: number
+    spaceName?: string
+    spaceType?: number
+    userId?: number
   }
 
   type Output = {
@@ -322,6 +339,7 @@ declare namespace API {
 
   type PictureUploadByBatchDTO = {
     count?: number
+    namePrefix?: string
     searchText?: string
   }
 
@@ -610,7 +628,9 @@ declare namespace API {
 
   type UserVO = {
     createTime?: string
+    email?: string
     id?: number
+    phone?: string
     userAccount?: string
     userAvatar?: string
     userName?: string

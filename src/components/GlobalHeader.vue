@@ -24,8 +24,12 @@
             <!-- overlay 插槽：下拉菜单内容 -->
             <template #overlay>
               <a-menu>
+                <a-menu-item @click="goUserInfo">
+                  <HomeOutlined />
+                  个人信息
+                </a-menu-item>
                 <a-menu-item @click="doLogout">
-                  <LogoutOutlined/>
+                  <LogoutOutlined />
                   退出登录
                 </a-menu-item>
               </a-menu>
@@ -71,11 +75,15 @@ const originItems = [
     title: '图片管理',
   },
   {
+    key: '/admin/spaceManage',
+    label: '空间管理',
+    title: '空间管理',
+  },
+  {
     key: '/picture/add',
     label: '创建图片',
     title: '创建图片',
-  }
-
+  },
 ]
 
 // 过滤菜单项
@@ -124,6 +132,16 @@ const doLogout = async () => {
   }else{
     message.error("退出失败")
   }
+}
+
+// 编写goUserInfo方法,跳转路由到个人信息页面，传递用户id过去
+const goUserInfo = () => {
+  router.push({
+    path: '/user/info',
+    query: {
+      id: loginUserStore.loginUser.id,
+    },
+  });
 }
 </script>
 <style scoped>
