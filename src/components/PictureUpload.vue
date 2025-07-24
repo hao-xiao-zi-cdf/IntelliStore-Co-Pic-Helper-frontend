@@ -19,7 +19,7 @@
 <script setup lang="ts">
 console.log('pictureUpload')
 import { message } from 'ant-design-vue'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { uploadPictureUsingPost1 } from '@/api/tupianxiangguanjiekou.ts'
 interface Props {
   picture?: API.PictureVO
@@ -34,11 +34,11 @@ const beforeUpload = (file: File) => {
   if (!isJpgOrPng) {
     message.error('不支持上传该格式的图片，推荐 jpg 或 png')
   }
-  const isLt2M = file.size / 1024 / 1024 < 2
-  if (!isLt2M) {
-    message.error('不能上传超过 2M 的图片')
+  const isLt10M = file.size / 1024 / 1024 < 10
+  if (!isLt10M) {
+    message.error('不能上传超过 10M 的图片')
   }
-  return isJpgOrPng && isLt2M
+  return isJpgOrPng && isLt10M
 }
 
 // 上传时传递 spaceId
@@ -55,7 +55,10 @@ const handleUpload = async ({ file }: any) => {
   loading.value = true
   try {
     const params = props.picture ? { id: props.picture.id } : {}
-    const res = await uploadPictureUsingPost1(params, {}, file)
+    const res = await uploadPictureUsingPost1(params, {
+      id: props.picture?.id,
+      spaceId: props.spaceId,
+    }, file)
     if (res.data.code === 200 && res.data.data) {
       message.success('图片上传成功')
       // 将上传成功的图片信息传递给父组件
@@ -69,6 +72,12 @@ const handleUpload = async ({ file }: any) => {
     loading.value = false
   }
 }
+//一进页面从父组件读取spaceId
+onMounted(
+  () => {
+    console.log('pictureUpload spaceId', props.spaceId)
+  }
+)
 </script>
 
 <style scoped>

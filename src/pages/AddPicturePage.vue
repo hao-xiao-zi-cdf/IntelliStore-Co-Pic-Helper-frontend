@@ -10,16 +10,18 @@
       <!-- 上传方式切换 -->
       <a-tabs v-model:activeKey="uploadType" class="upload-tabs">
         <a-tab-pane v-if="showFileUpload" key="file" tab="📁 文件上传">
-          <PictureUpload :picture="picture" :onSuccess="handleFileSuccess" />
+          <PictureUpload :spaceId="spaceId" :picture="picture" :onSuccess="handleFileSuccess" />
         </a-tab-pane>
-        <a-tab-pane v-if="showUrlUpload" key="url" tab="🌐 URL 上传">
-          <UrlPictureUpload :picture="picture" :onSuccess="handleUrlSuccess" />
+        <a-tab-pane v-if="route.query?.id == undefined && showUrlUpload" key="url" tab="🌐 URL 上传">
+          <UrlPictureUpload :spaceId="spaceId" :picture="picture" :onSuccess="handleUrlSuccess" />
         </a-tab-pane>
       </a-tabs>
-
+<!--      居中展示,宽度不太太长-->
+      <a-button :icon="h(EditOutlined)" @click="doEditPicture" size="large"
+                style="width: 50%; margin: 0 auto; display: block; background-color: whitesmoke" >编辑图片</a-button>
       <!-- 表单区 -->
       <a-form
-        v-if="!showFileUpload || !showUrlUpload"
+        v-if="!showFileUpload || !showUrlUpload || picture?.id"
         layout="vertical"
         :model="pictureForm"
         @finish="handleSubmit"
@@ -56,6 +58,24 @@
           />
         </a-form-item>
 
+        <div v-if="picture" class="edit-bar">
+          <a-button type="primary" ghost :icon="h(FullscreenOutlined)" @click="doImagePainting">
+            AI 扩图
+          </a-button>
+          <ImageCropper
+            ref="imageCropperRef"
+            :imageUrl="picture?.url"
+            :picture="picture"
+            :spaceId="spaceId"
+            :onSuccess="onCropSuccess"
+          />
+        </div>
+        <ImageOutPainting
+          ref="imageOutPaintingRef"
+          :picture="picture"
+          :spaceId="spaceId"
+          :onSuccess="onImageOutPaintingSuccess"
+        />
         <a-form-item>
           <a-button type="primary" html-type="submit" block size="large">
             {{ route.query?.id ? '保存修改' : '创建图片' }}
@@ -69,16 +89,27 @@
 <script setup lang="ts">
 import PictureUpload from '@/components/PictureUpload.vue'
 import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
-import { computed, onMounted, reactive, ref } from 'vue'
-import { editPictureUsingPost, getPictureVoByIdUsingGet } from '@/api/tupianxiangguanjiekou.ts'
+import { computed, h, onMounted, reactive, ref } from 'vue'
+import { editPictureUsingPost, getPictureVoByIdUsingGet, uploadPictureUsingPost } from '@/api/tupianxiangguanjiekou.ts'
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
+import ImageCropper from '@/components/ImageCropper.vue'
+import { EditOutlined,FullscreenOutlined } from '@ant-design/icons-vue'
+import ImageOutPainting from '@/components/ImageOutPainting.vue'
 
 const route = useRoute()
 const router = useRouter()
 
 const picture = ref<API.PictureVO>()
 const pictureForm = reactive<API.PictrueUpdateDTO>({})
+
+interface Props {
+  imageUrl?: string
+  picture?: API.PictureVO
+  spaceId?: number
+  onSuccess?: (newPicture: API.PictureVO) => void
+}
+
 
 // 当前上传方式
 const uploadType = ref()
@@ -89,6 +120,57 @@ const showUrlUpload = ref(true)
 const spaceId = computed(() => {
   return route.query?.spaceId
 })
+const loading = ref<boolean>(false)
+
+// 确认裁剪
+const handleConfirm = () => {
+  cropperRef.value.getCropBlob((blob: Blob) => {
+    const fileName = (props.picture?.name || 'image') + '.png'
+    const file = new File([blob], fileName, { type: blob.type })
+    // 上传图片
+    handleUpload({ file })
+  })
+}
+
+/**
+ * 上传
+ * @param file
+ */
+const handleUpload = async ({ file }: any) => {
+  loading.value = true
+  try {
+    const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
+    params.spaceId = props.spaceId
+    const res = await uploadPictureUsingPost(params, {}, file)
+    if (res.data.code === 200 && res.data.data) {
+      message.success('图片上传成功')
+      // 将上传成功的图片信息传递给父组件
+      props.onSuccess?.(res.data.data)
+      closeModal();
+    } else {
+      message.error('图片上传失败，' + res.data.message)
+    }
+  } catch (error) {
+    message.error('图片上传失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 图片编辑弹窗引用
+const imageCropperRef = ref()
+
+// 编辑图片
+const doEditPicture = () => {
+  if (imageCropperRef.value) {
+    imageCropperRef.value.openModal()
+  }
+}
+
+// 编辑成功事件
+const onCropSuccess = (newPicture: API.PictureVO) => {
+  picture.value = newPicture
+}
 
 function handleFileSuccess(newPicture: API.PictureVO) {
   picture.value = newPicture
@@ -127,7 +209,6 @@ const getOldPicture = async () => {
     }
   }
 }
-
 onMounted(() => {
   getOldPicture()
 })
@@ -179,4 +260,9 @@ onMounted(() => {
   border-radius: 6px;
   font-size: 16px;
 }
+#addPicturePage .edit-bar {
+  text-align: center;
+  margin: 16px 0;
+}
+
 </style>

@@ -7,6 +7,23 @@
         <a-button type="primary" :href="`/picture/add?spaceId=${id}`" target="_blank">
           + 创建图片
         </a-button>
+        <a-button
+          type="primary"
+          ghost
+          :icon="h(BarChartOutlined)"
+          :href="`/space/analyze?spaceId=${id}`"
+          target="_blank"
+        >
+          空间分析
+        </a-button>
+        <a-button :icon="h(EditOutlined)" @click="doBatchEdit"> 批量编辑</a-button>
+        <BatchEditPictureModal
+          ref="batchEditPictureModalRef"
+          :spaceId="id"
+          :pictureList="dataList"
+          :onSuccess="onBatchEditPictureSuccess"
+        />
+
         <a-tooltip
           :title="`占用空间 ${formatSize(space.totalSize)} / ${formatSize(space.maxSize)}`"
         >
@@ -37,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { h, onMounted, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { formatSize } from '@/utils'
 import { getPictureVoListByCacheUsingPost, searchPicTureByColorUsingPost } from '@/api/tupianxiangguanjiekou.ts'
@@ -45,6 +62,8 @@ import { getSpaceByIdUsingGet } from '@/api/kongjianxiangguanjiekou.ts'
 import PictureList from '@/components/PictureList.vue'
 import PictureSearchForm from '@/components/PictureSearchForm.vue'
 import { ColorPicker } from 'vue3-colorpicker'
+import BatchEditPictureModal from '@/components/BatchEditPictureModel.vue'
+import { EditOutlined, BarChartOutlined } from '@ant-design/icons-vue'
 
 const props = defineProps<{
   id: string | number
@@ -119,6 +138,20 @@ const fetchData = async () => {
   loading.value = false
 }
 
+// 分享弹窗引用
+const batchEditPictureModalRef = ref()
+
+// 批量编辑成功后，刷新数据
+const onBatchEditPictureSuccess = () => {
+  fetchData()
+}
+
+// 打开批量编辑弹窗
+const doBatchEdit = () => {
+  if (batchEditPictureModalRef.value) {
+    batchEditPictureModalRef.value.openModal()
+  }
+}
 
 // 页面加载时请求一次
 onMounted(() => {
