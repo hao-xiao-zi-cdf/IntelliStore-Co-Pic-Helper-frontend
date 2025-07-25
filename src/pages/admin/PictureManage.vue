@@ -210,7 +210,7 @@
             >
               拒绝
             </a-button>
-            <a-button type="link" :href="`/add_picture?id=${record.id}`" target="_blank"
+            <a-button type="link" :href="`/picture/add?id=${record.id}`" target="_blank"
               >编辑
             </a-button>
             <a-button type="link" danger @click="doDelete(record.id)">删除</a-button>

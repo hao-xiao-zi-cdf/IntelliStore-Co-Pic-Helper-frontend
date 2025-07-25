@@ -158,10 +158,11 @@ import 'vue-cropper/dist/index.css'
 
 interface Props {
   imageUrl?: string
+  picture?: API.PictureVO
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits(['confirm'])
+const emit = defineEmits(['confirm','onCropSuccess'])
 const cropperRef = ref<any>(null)
 const loading = ref(false)
 
@@ -300,6 +301,7 @@ const handleConfirm = () => {
   } else {
     loading.value = false
   }
+  emit('onCropSuccess', props.picture)
 }
 
 const aspectRatio = ref('free')

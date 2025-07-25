@@ -1,6 +1,5 @@
 <template>
   <div id="homePage">
-    <!-- 搜索框 -->
     <div class="search-bar">
       <div class="search-wrapper">
         <a-input-search
@@ -13,7 +12,6 @@
       </div>
     </div>
 
-    <!-- 分类 + 标签 -->
     <div class="category-tag-wrapper">
       <a-tabs v-model:activeKey="selectedCategory" @change="doSearch" class="animated-tabs">
         <a-tab-pane key="all" tab="全部" />
@@ -40,7 +38,6 @@
       </div>
     </div>
 
-    <!-- 图片列表 -->
     <PictureList :dataList="dataList" :loading="loading" @clickPicture="doClickPicture" @delete="handleDelete"></PictureList>
     <a-pagination
       style="text-align: right"
@@ -49,19 +46,32 @@
       :total="total"
       :show-total="() => `共 ${total} 条`"
       @change="onPageChange" />
+
+    <a-float-button
+      v-if="showBackTop"
+      @click="scrollToTop"
+      type="primary"
+      :style="{ right: '24px', top: '50%', transform: 'translateY(-50%)' }"
+    >
+      <template #icon>
+        <up-outlined />
+      </template>
+    </a-float-button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, onUnmounted } from 'vue'
 import { getPictureVoListByCacheUsingPost, listPictureTagCategoryUsingGet } from '@/api/tupianxiangguanjiekou.ts'
 import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 import PictureList from '@/components/PictureList.vue'
+import { UpOutlined } from '@ant-design/icons-vue'; // 导入图标
 
 const dataList = ref<any>([])
 const total = ref(0)
 const loading = ref(true)
+const showBackTop = ref(false) // 控制回到顶部按钮的显示
 
 const searchParams = reactive<API.PictureQueryDTO>({
   current: 1,
@@ -80,7 +90,24 @@ const onPageChange = (page, pageSize) => {
 onMounted(() => {
   fetchData()
   getTagCategoryOptions()
+  window.addEventListener('scroll', handleScroll); // 监听滚动事件
 })
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll); // 移除滚动事件监听
+})
+
+const handleScroll = () => {
+  // 当页面滚动超过一定距离时显示按钮
+  showBackTop.value = window.scrollY > 200;
+};
+
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth' // 平滑滚动
+  });
+};
 
 const doSearch = () => {
   searchParams.current = 1
