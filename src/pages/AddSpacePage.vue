@@ -1,5 +1,8 @@
 <template>
   <div class="addSpacePage">
+    <h2 style="margin-bottom: 16px">
+      {{ route.query?.spaceId ? '修改' : '创建' }}{{ SPACE_TYPE_MAP[spaceType] }}
+    </h2>
     <a-form layout="vertical" :model="formData" @finish="handleSubmit">
       <a-form-item label="空间名称" name="spaceName">
         <a-input v-model:value="formData.spaceName" placeholder="请输入空间名称" allow-clear />
@@ -28,9 +31,7 @@
           {{ spaceLevel.maxCount }}
         </a-typography-paragraph>
       </a-card>
-
     </a-form>
-
   </div>
 </template>
 
@@ -38,10 +39,16 @@
 import { SPACE_LEVEL_ENUM, SPACE_LEVEL_OPTIONS } from '@/constants/space.ts'
 import { message } from 'ant-design-vue'
 import router from '@/router'
-import { onMounted, reactive, ref } from 'vue'
-import { getSpaceByIdUsingGet, listSpaceLevelUsingGet, updateSpaceUsingPost } from '@/api/kongjianxiangguanjiekou.ts'
+import { computed, onMounted, reactive, ref } from 'vue'
+import {
+  getSpaceByIdUsingGet,
+  listSpaceLevelUsingGet,
+  updateSpaceUsingPost,
+  updateSpaceUsingPost1
+} from '@/api/kongjianxiangguanjiekou.ts'
 import { formatSize } from '@/utils'
 import { useRoute } from 'vue-router'
+import { SPACE_TYPE_ENUM, SPACE_TYPE_MAP } from '@/constants/spaceUser.ts'
 const formData = reactive<API.SpaceCreateDTO | API.SpaceUpdateDTO>({
   spaceName: '',
   spaceLevel: SPACE_LEVEL_ENUM.COMMON,
@@ -54,7 +61,7 @@ const handleSubmit = async (values: any) => {
   let res
   // 更新
   if (spaceId) {
-    res = await updateSpaceUsingPost({
+    res = await updateSpaceUsingPost1({
       id: spaceId,
       ...formData,
     })
@@ -62,6 +69,7 @@ const handleSubmit = async (values: any) => {
     // 创建
     res = await updateSpaceUsingPost({
       ...formData,
+      spaceType: spaceType.value
     })
   }
   if (res.data.code === 200 && res.data.data) {
@@ -92,6 +100,14 @@ onMounted(() => {
   fetchSpaceLevelList()
 })
 
+// 空间类别
+const spaceType = computed(() => {
+  if (route.query?.type) {
+    return Number(route.query.type)
+  }
+  return SPACE_TYPE_ENUM.PRIVATE
+})
+
 const route = useRoute()
 const oldSpace = ref<API.SpaceVO>()
 
@@ -99,11 +115,15 @@ const oldSpace = ref<API.SpaceVO>()
 const getOldSpace = async () => {
   // 获取数据
   const id = route.query?.id
+  oldSpace.value = {
+    ...(oldSpace.value || {}),
+    id: route.query?.spaceId,
+  }
   if (id) {
     const res = await getSpaceByIdUsingGet({
       id: id,
     })
-    if (res.data.code === 0 && res.data.data) {
+    if (res.data.code === 200 && res.data.data) {
       const data = res.data.data
       oldSpace.value = data
       formData.spaceName = data.spaceName
@@ -116,10 +136,6 @@ const getOldSpace = async () => {
 onMounted(() => {
   getOldSpace()
 })
-
-
-
-
 </script>
 
 <style scoped>

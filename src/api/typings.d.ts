@@ -187,6 +187,8 @@ declare namespace API {
   type getPictureVoByIdUsingGETParams = {
     /** id */
     id: number
+    /** spaceId */
+    spaceId: number
   }
 
   type getSpaceByIdUsingGETParams = {
@@ -262,6 +264,7 @@ declare namespace API {
     id?: number
     introduction?: string
     name?: string
+    spaceId?: number
     tags?: string[]
     url?: string
   }
@@ -295,6 +298,8 @@ declare namespace API {
   type pictureDeleteUsingDELETEParams = {
     /** id */
     id: number
+    /** spaceId */
+    spaceId: number
   }
 
   type PictureEditByBatchDTO = {
@@ -302,7 +307,7 @@ declare namespace API {
     idList?: number[]
     nameRule?: string
     spaceId?: number
-    tag?: string[]
+    tags?: string[]
   }
 
   type PictureQueryDTO = {
@@ -361,6 +366,7 @@ declare namespace API {
     id?: number
     introduction?: string
     name?: string
+    permissionList?: string[]
     picColor?: string
     picFormat?: string
     picHeight?: number
@@ -542,6 +548,7 @@ declare namespace API {
     id?: number
     maxCount?: number
     maxSize?: number
+    permissionList?: string[]
     spaceLevel?: number
     spaceName?: string
     spaceType?: number

@@ -62,6 +62,7 @@
                 分享
               </a-button>
               <a-button
+                v-if="checkIfCreator(picture) || canEdit"
                 type="primary"
                 size="small"
                 @click.stop="doEditPicture(picture)"
@@ -73,6 +74,7 @@
                 编辑
               </a-button>
               <a-button
+                v-if="checkIfCreator(picture) || canDelete"
                 danger
                 size="small"
                 @click.stop="doDeletePicture(picture)"
@@ -98,15 +100,23 @@ import { pictureDeleteUsingDelete } from '@/api/tupianxiangguanjiekou.ts'
 import { message } from 'ant-design-vue'
 import { computed, reactive, ref } from 'vue'
 import ShareModal from '@/components/ShareModal.vue'
+import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 
 interface Props {
   dataList?: API.PictureVO[]
   loading?: boolean
+  showOp?: boolean
+  onReload?: () => void
+  canEdit?: boolean
+  canDelete?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   dataList: () => [],
   loading: false,
+  showOp: false,
+  canEdit: false,
+  canDelete: false,
 })
 
 // 定义事件
@@ -119,7 +129,7 @@ const emit = defineEmits<{
 const router = useRouter()
 const doClickPicture = (picture) => {
   router.push({
-    path: `/picture/${picture.id}`,
+    path: `/picture/${picture.id}/${picture.spaceId}`,
   })
 }
 
@@ -134,6 +144,7 @@ const doEditPicture = (picture) => {
     path: `/picture/add/`,
     query: {
       id: picture.id,
+      spaceId: picture.spaceId,
     },
   })
 }
@@ -143,7 +154,7 @@ const doDeletePicture = async (picture) => {
   const id = picture.id
   if (!id)
     return
-  const res = await pictureDeleteUsingDelete( {id} )
+  const res = await pictureDeleteUsingDelete( {id: id, spaceId: picture.spaceId} )
   if (res.data.code === 200) {
     message.success('删除成功')
     // 删除成功，刷新列表
@@ -166,6 +177,25 @@ const doShare = (picture: API.PictureVO) => {
   }
 }
 
+// 获取登录用户状态管理
+const loginUserStore = useLoginUserStore();
+
+const checkIfCreator = (picture: API.PictureVO) => {
+  const currentUser = loginUserStore.loginUser;
+
+  // 如果用户未登录，则不展示按钮
+  if (!currentUser || currentUser.id === undefined) {
+    return false;
+  }
+
+  // 如果当前用户是管理员，则始终展示按钮
+  if (currentUser.userRole === "admin") { // 假设用户角色字段为 userRole，管理员角色值为 "admin"
+    return true;
+  }
+
+  // 否则，只有当图片的创建者ID与当前用户ID匹配时才展示按钮
+  return picture?.userId !== undefined && currentUser.id === picture.userId;
+};
 </script>
 
 <style scoped>

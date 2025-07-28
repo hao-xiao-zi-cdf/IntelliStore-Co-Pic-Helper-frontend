@@ -6,7 +6,7 @@
       :custom-request="handleUpload"
       :before-upload="beforeUpload"
     >
-      <img v-if="picture?.url" :src="picture?.url" alt="avatar" />
+      <img v-if="props.picture?.url" :src="props.picture?.url" alt="avatar" />
       <div v-else>
         <loading-outlined v-if="loading"></loading-outlined>
         <plus-outlined v-else></plus-outlined>
@@ -17,7 +17,6 @@
 </template>
 
 <script setup lang="ts">
-console.log('pictureUpload')
 import { message } from 'ant-design-vue'
 import { onMounted, ref } from 'vue'
 import { uploadPictureUsingPost1 } from '@/api/tupianxiangguanjiekou.ts'
@@ -41,10 +40,6 @@ const beforeUpload = (file: File) => {
   return isJpgOrPng && isLt10M
 }
 
-// 上传时传递 spaceId
-const params: API.PictureUploadDTO = props.picture ? { id: props.picture.id } : {}
-params.spaceId = props.spaceId;
-
 const loading = ref<boolean>(false)
 
 /**
@@ -54,11 +49,18 @@ const loading = ref<boolean>(false)
 const handleUpload = async ({ file }: any) => {
   loading.value = true
   try {
-    const params = props.picture ? { id: props.picture.id } : {}
-    const res = await uploadPictureUsingPost1(params, {
-      id: props.picture?.id,
-      spaceId: props.spaceId,
-    }, file)
+    const requestBody: API.uploadPictureUsingPOST1Params = {
+      spaceId: props.spaceId, // 无论更新还是新增，都传递 spaceId
+    };
+
+    if (props.picture?.id) {
+      requestBody.id = props.picture.id;
+    }
+
+    // 第一个参数 params (URL query params) 在这种情况下是空的 {}
+    // 第二个参数 requestBody 包含 id 和 spaceId，这些会被添加到 FormData
+    // 第三个参数 file 是要上传的图片文件，会被以 'multipartFile' 的键添加到 FormData
+    const res = await uploadPictureUsingPost1({}, requestBody, file)
     if (res.data.code === 200 && res.data.data) {
       message.success('图片上传成功')
       // 将上传成功的图片信息传递给父组件
@@ -67,6 +69,7 @@ const handleUpload = async ({ file }: any) => {
       message.error('图片上传失败，' + res.data.message)
     }
   } catch (error) {
+    console.error('图片上传失败:', error);
     message.error('图片上传失败')
   } finally {
     loading.value = false
@@ -75,7 +78,7 @@ const handleUpload = async ({ file }: any) => {
 //一进页面从父组件读取spaceId
 onMounted(
   () => {
-    console.log('pictureUpload spaceId', props.spaceId)
+    console.log(props.picture)
   }
 )
 </script>

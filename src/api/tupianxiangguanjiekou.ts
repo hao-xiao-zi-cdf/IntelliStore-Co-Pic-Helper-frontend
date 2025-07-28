@@ -31,14 +31,14 @@ export async function getPictureByIdUsingGet(
   })
 }
 
-/** 删除图片（本人和管理员） DELETE /api/picture/${param0} */
+/** 删除图片（本人和管理员） DELETE /api/picture/${param0}/${param1} */
 export async function pictureDeleteUsingDelete(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.pictureDeleteUsingDELETEParams,
   options?: { [key: string]: any }
 ) {
-  const { id: param0, ...queryParams } = params
-  return request<API.BaseResponseBoolean_>(`/api/picture/${param0}`, {
+  const { id: param0, spaceId: param1, ...queryParams } = params
+  return request<API.BaseResponseBoolean_>(`/api/picture/${param0}/${param1}`, {
     method: 'DELETE',
     params: { ...queryParams },
     ...(options || {}),
@@ -105,7 +105,7 @@ export async function getPictureListUsingPost(
   })
 }
 
-/** createPictureOutPaintingTask POST /api/picture/out_painting/create_task */
+/** 创建 AI 扩图任务 POST /api/picture/out_painting/create_task */
 export async function createPictureOutPaintingTaskUsingPost(
   body: API.CreatePictureOutPaintingTaskDTO,
   options?: { [key: string]: any }
@@ -156,7 +156,7 @@ export async function pictureReviewUsingPost(
   })
 }
 
-/** searchPicTureByColor POST /api/picture/search/color */
+/** 颜色搜图 POST /api/picture/search/color */
 export async function searchPicTureByColorUsingPost(
   body: API.SearchPictureByColorDTO,
   options?: { [key: string]: any }
@@ -250,14 +250,14 @@ export async function uploadPictureUsingPost(
   })
 }
 
-/** 查询图片信息（普通用户） GET /api/picture/vo/${param0} */
+/** 查询图片信息（普通用户） GET /api/picture/vo/${param0}/${param1} */
 export async function getPictureVoByIdUsingGet(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getPictureVoByIdUsingGETParams,
   options?: { [key: string]: any }
 ) {
-  const { id: param0, ...queryParams } = params
-  return request<API.BaseResponsePictureVO_>(`/api/picture/vo/${param0}`, {
+  const { id: param0, spaceId: param1, ...queryParams } = params
+  return request<API.BaseResponsePictureVO_>(`/api/picture/vo/${param0}/${param1}`, {
     method: 'GET',
     params: { ...queryParams },
     ...(options || {}),

@@ -109,6 +109,9 @@ const router = useRouter()
 const doMenuClick = ({ key }) => {
   router.push({
     path: key,
+    query: {
+      spaceId: 0
+    }
   })
 }
 //当前要高亮的菜单项

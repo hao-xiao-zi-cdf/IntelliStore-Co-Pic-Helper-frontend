@@ -93,13 +93,14 @@ import { EditOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icon
 
 const props = defineProps<{
   id: string | number
+  spaceId: string | number
 }>()
 
 const picture = ref<API.PictureVO>({})
 
 const fetchPictureDetail = async () => {
   try {
-    const res = await getPictureVoByIdUsingGet({ id: props.id })
+    const res = await getPictureVoByIdUsingGet({ id: props.id, spaceId: props.spaceId })
     if (res.data.code === 200 && res.data.data) {
       picture.value = res.data.data
     } else {
@@ -121,7 +122,13 @@ const canEdit = computed(() => {
 })
 
 const doEdit = () => {
-  router.push('/picture/add?id=' + picture.value.id)
+  router.push({
+    path: `/picture/add/`,
+    query: {
+      id: picture.value.id,
+      spaceId: picture.value.spaceId,
+    },
+  })
 }
 const doDelete = async () => {
   const id = picture.value.id

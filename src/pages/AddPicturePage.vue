@@ -122,40 +122,40 @@ const spaceId = computed(() => {
 })
 const loading = ref<boolean>(false)
 
-// 确认裁剪
-const handleConfirm = () => {
-  cropperRef.value.getCropBlob((blob: Blob) => {
-    const fileName = (props.picture?.name || 'image') + '.png'
-    const file = new File([blob], fileName, { type: blob.type })
-    // 上传图片
-    handleUpload({ file })
-  })
-}
+// // 确认裁剪
+// const handleConfirm = () => {
+//   cropperRef.value.getCropBlob((blob: Blob) => {
+//     const fileName = (props.picture?.name || 'image') + '.png'
+//     const file = new File([blob], fileName, { type: blob.type })
+//     // 上传图片
+//     handleUpload({ file })
+//   })
+// }
 
 /**
  * 上传
  * @param file
  */
-const handleUpload = async ({ file }: any) => {
-  loading.value = true
-  try {
-    const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
-    params.spaceId = props.spaceId
-    const res = await uploadPictureUsingPost(params, {}, file)
-    if (res.data.code === 200 && res.data.data) {
-      message.success('图片上传成功')
-      // 将上传成功的图片信息传递给父组件
-      props.onSuccess?.(res.data.data)
-      closeModal();
-    } else {
-      message.error('图片上传失败，' + res.data.message)
-    }
-  } catch (error) {
-    message.error('图片上传失败')
-  } finally {
-    loading.value = false
-  }
-}
+// const handleUpload = async ({ file }: any) => {
+//   loading.value = true
+//   try {
+//     const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
+//     params.spaceId = props.spaceId
+//     const res = await uploadPictureUsingPost(params, {}, file)
+//     if (res.data.code === 200 && res.data.data) {
+//       message.success('图片上传成功')
+//       // 将上传成功的图片信息传递给父组件
+//       props.onSuccess?.(res.data.data)
+//       closeModal();
+//     } else {
+//       message.error('图片上传失败，' + res.data.message)
+//     }
+//   } catch (error) {
+//     message.error('图片上传失败')
+//   } finally {
+//     loading.value = false
+//   }
+// }
 
 // 图片编辑弹窗引用
 const imageCropperRef = ref()
@@ -197,8 +197,9 @@ const handleSubmit = async (values: any) => {
 
 const getOldPicture = async () => {
   const id = route.query?.id
+  const spaceId = route.query?.spaceId
   if (id) {
-    const res = await getPictureVoByIdUsingGet({ id })
+    const res = await getPictureVoByIdUsingGet({ id, spaceId })
     if (res.data.code === 200 && res.data.data) {
       const data = res.data.data
       picture.value = data

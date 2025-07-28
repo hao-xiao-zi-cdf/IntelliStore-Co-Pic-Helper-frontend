@@ -14,6 +14,7 @@ import MySpacePage from '@/pages/MySpacePage.vue'
 import SpaceDetailPage from '@/pages/SpaceDetailPage.vue'
 import SearchPicturePage from '@/pages/SearchPicturePage.vue'
 import SpaceAnalyzePage from '@/pages/SpaceAnalyzePage.vue'
+import SpaceUserManagePage from '@/pages/SpaceUserManagePage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -49,7 +50,7 @@ const router = createRouter({
       component: PictureManage,
     },
     {
-      path: '/picture/:id',
+      path: '/picture/:id/:spaceId',
       name: '图片详情',
       component: PictureDetailPage,
       props: true,
@@ -94,7 +95,14 @@ const router = createRouter({
       path: '/space/analyze',
       name: '空间分析',
       component: SpaceAnalyzePage,
-    }
+    },
+    {
+      path: '/spaceUserManage/:id',
+      name: '空间成员管理',
+      component: SpaceUserManagePage,
+      props: true,
+    },
+
 
   ],
 })

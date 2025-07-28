@@ -29,11 +29,13 @@
 </template>
 
 <script setup lang="ts">
-import { UserOutlined, PictureOutlined, MenuUnfoldOutlined } from '@ant-design/icons-vue' // 确保引入 HomeOutlined
+import { UserOutlined, PictureOutlined, MenuUnfoldOutlined, TeamOutlined } from '@ant-design/icons-vue' // 确保引入 HomeOutlined
 import { useRouter, useRoute } from 'vue-router' // 引入 useRoute
-import { h, ref, watch } from 'vue' // 引入 watch
+import { computed, h, ref, watch, watchEffect } from 'vue' // 引入 watch
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
-import type { MenuProps } from 'ant-design-vue' // 引入 MenuProps
+import { type MenuProps, message } from 'ant-design-vue'
+import { SPACE_TYPE_ENUM } from '@/constants/spaceUser.ts'
+import { listMyTeamSpaceUsingPost } from '@/api/spaceUserController.ts' // 引入 MenuProps
 
 const loginUserStore = useLoginUserStore()
 const router = useRouter()
@@ -62,35 +64,12 @@ const originMenuItems = [
     label: '我的空间',
     icon: () => h(UserOutlined),
   },
-  // 如果需要管理员页面在侧边栏显示，但又不想修改GlobalHeader的逻辑，
-  // 可以将管理员相关的菜单项也放在这里，并在此处进行权限过滤。
-  // 示例：
-  // {
-  //   key: '/admin/userManage',
-  //   label: '用户管理 (仅管理员)',
-  //   icon: () => h(UserOutlined),
-  //   meta: { roles: ['admin'] },
-  // },
+  {
+    key: '/space/add?type=' + SPACE_TYPE_ENUM.TEAM,
+    label: '创建团队',
+    icon: () => h(TeamOutlined),
+  },
 ]
-
-// 过滤菜单项（确保与原有逻辑一致）
-const menuItems = ref<MenuProps['items']>([])
-
-const filterAndSetMenuItems = () => {
-  menuItems.value = originMenuItems.filter((menu: any) => {
-    // 使用 any 来访问 meta
-    // 假设你有需要过滤的菜单项，例如：
-    // if (menu.meta && menu.meta.roles && !menu.meta.roles.includes(loginUserStore.loginUser.userRole)) {
-    //   return false;
-    // }
-    // 根据你提供的 GlobalSider.vue，目前没有复杂的权限过滤，这里保留原样
-    return true
-  })
-}
-
-// 初始加载和用户登录状态变化时更新菜单
-filterAndSetMenuItems()
-watch(() => loginUserStore.loginUser, filterAndSetMenuItems)
 
 // 当前选中菜单
 const current = ref<string[]>([])
@@ -99,12 +78,90 @@ router.afterEach((to, from, failure) => {
   current.value = [to.path]
 })
 
+const teamSpaceList = ref<API.SpaceUserVO[]>([])
+// 删除 filterAndSetMenuItems 函数和对 menuItems.value 的赋值操作
+// 修改 menuItems computed 如下：
+
+const menuItems = computed(() => {
+  // 过滤原始菜单项（根据权限等）
+  const filteredOriginMenuItems = originMenuItems.filter((menu: any) => {
+    // 示例：可以在这里添加权限判断逻辑
+    return true
+  })
+
+  // 没有团队空间，只展示固定菜单
+  if (teamSpaceList.value.length < 1) {
+    return filteredOriginMenuItems
+  }
+
+  // 展示团队空间分组
+  const teamSpaceSubMenus = teamSpaceList.value.map((spaceUser) => {
+    const space = spaceUser.space
+    return {
+      key: '/space/' + spaceUser.spaceId,
+      label: space?.spaceName,
+    }
+  })
+
+  const teamSpaceMenuGroup = {
+    type: 'group',
+    label: '我的团队',
+    key: 'teamSpace',
+    children: teamSpaceSubMenus,
+  }
+
+  return [...filteredOriginMenuItems, teamSpaceMenuGroup]
+})
+
+// 加载团队空间列表
+const fetchTeamSpaceList = async () => {
+  const res = await listMyTeamSpaceUsingPost()
+  if (res.data.code === 200 && res.data.data) {
+    teamSpaceList.value = res.data.data
+  } else {
+    message.error('加载我的团队空间失败，' + res.data.message)
+  }
+}
+
+/**
+ * 监听变量，改变时触发数据的重新加载
+ */
+watchEffect(() => {
+  // 登录才加载
+  if (loginUserStore.loginUser.id) {
+    fetchTeamSpaceList()
+  }
+})
+
 // 路由跳转事件
 const doMenuClick = ({ key }: { key: string }) => {
-  router.push({
-    path: key,
-  })
+  // 检查 key 是否包含查询参数
+  if (key.includes('?')) {
+    // 分离路径和查询字符串
+    const [path, queryString] = key.split('?')
+
+    // 解析查询参数
+    const query: Record<string, string> = {}
+    queryString.split('&').forEach(param => {
+      const [key, value] = param.split('=')
+      if (key && value !== undefined) {
+        query[key] = value
+      }
+    })
+
+    // 使用解析后的路径和查询参数进行跳转
+    router.push({
+      path,
+      query
+    })
+  } else {
+    // 没有查询参数的情况，直接跳转
+    router.push({
+      path: key
+    })
+  }
 }
+
 </script>
 
 <style scoped>
