@@ -16,7 +16,7 @@
           <UrlPictureUpload :spaceId="spaceId" :picture="picture" :onSuccess="handleUrlSuccess" />
         </a-tab-pane>
       </a-tabs>
-<!--      居中展示,宽度不太太长-->
+      <!--      居中展示,宽度不太太长-->
       <a-button :icon="h(EditOutlined)" @click="doEditPicture" size="large"
                 style="width: 50%; margin: 0 auto; display: block; background-color: whitesmoke" >编辑图片</a-button>
       <!-- 表单区 -->
@@ -67,6 +67,7 @@
             :imageUrl="picture?.url"
             :picture="picture"
             :spaceId="spaceId"
+            :space="space"
             :onSuccess="onCropSuccess"
           />
         </div>
@@ -89,13 +90,14 @@
 <script setup lang="ts">
 import PictureUpload from '@/components/PictureUpload.vue'
 import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
-import { computed, h, onMounted, reactive, ref } from 'vue'
+import { computed, h, onMounted, reactive, ref, watchEffect } from 'vue'
 import { editPictureUsingPost, getPictureVoByIdUsingGet, uploadPictureUsingPost } from '@/api/tupianxiangguanjiekou.ts'
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
 import ImageCropper from '@/components/ImageCropper.vue'
 import { EditOutlined,FullscreenOutlined } from '@ant-design/icons-vue'
 import ImageOutPainting from '@/components/ImageOutPainting.vue'
+import { getSpaceByIdUsingGet } from '@/api/kongjianxiangguanjiekou.ts'
 
 const route = useRoute()
 const router = useRouter()
@@ -210,6 +212,26 @@ const getOldPicture = async () => {
     }
   }
 }
+
+const space = ref<API.SpaceVO>()
+
+// 获取空间信息
+const fetchSpace = async () => {
+  // 获取数据
+  if (spaceId.value) {
+    const res = await getSpaceByIdUsingGet({
+      id: spaceId.value,
+    })
+    if (res.data.code === 200 && res.data.data) {
+      space.value = res.data.data
+    }
+  }
+}
+
+watchEffect(() => {
+  fetchSpace()
+})
+
 onMounted(() => {
   getOldPicture()
 })
