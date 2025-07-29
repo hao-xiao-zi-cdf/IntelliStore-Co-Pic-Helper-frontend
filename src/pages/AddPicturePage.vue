@@ -59,9 +59,6 @@
         </a-form-item>
 
         <div v-if="picture" class="edit-bar">
-          <a-button type="primary" ghost :icon="h(FullscreenOutlined)" @click="doImagePainting">
-            AI 扩图
-          </a-button>
           <ImageCropper
             ref="imageCropperRef"
             :imageUrl="picture?.url"
@@ -167,6 +164,10 @@ const doEditPicture = () => {
   if (imageCropperRef.value) {
     imageCropperRef.value.openModal()
   }
+}
+
+const onImageOutPaintingSuccess = (newPicture: API.PictureVO) => {
+  picture.value = newPicture
 }
 
 // 编辑成功事件

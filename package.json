@@ -19,13 +19,15 @@
     "echarts": "^5.6.0",
     "echarts-wordcloud": "^2.1.0",
     "file-saver": "^2.0.5",
+    "lottie-web": "^5.13.0",
     "pinia": "^2.2.6",
     "tslib": "^2.8.1",
     "vue": "^3.5.13",
     "vue-cropper": "^1.1.4",
     "vue-echarts": "^7.0.3",
     "vue-router": "^4.4.5",
-    "vue3-colorpicker": "^2.3.0"
+    "vue3-colorpicker": "^2.3.0",
+    "vue3-lottie": "^3.3.1"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.0",
