@@ -143,6 +143,8 @@ import type { FormInstance } from 'ant-design-vue';
 import { getUserVoUsingGet, userEditUsingPost } from '@/api/yonghumokuaixiangguanjiekou.ts';
 import { useRoute } from 'vue-router';
 import dayjs from 'dayjs';
+import { uploadPictureUsingPost1 } from '@/api/tupianxiangguanjiekou.ts'
+import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 
 interface UserVO {
   createTime?: string;
@@ -244,11 +246,33 @@ const toggleEditMode = () => {
     formRef.value?.resetFields(); // 重置表单校验状态
 };
 
-const handleAvatarUpload = (options: any) => {
+const handleAvatarUpload = async (options: any) => {
   const { file } = options;
-  console.log('正在上传头像:', file.name);
-  message.success(`头像 ${file.name} 上传中... (实际上传逻辑待实现)`);
-  return Promise.resolve();
+  // 调用图片上传接口，先将头像上传
+  const res = await uploadPictureUsingPost1({spaceId: 1298723918729884}, {}, file);
+  if (res.data.code !== 200) {
+    message.error('图片上传失败');
+    return;
+  }
+  // 获取返回结果中的图片url路径
+  const avatarUrl = res.data.data.url;
+
+  // 调用用户信息编辑接口，将用户信息更新
+  const res1 = await userEditUsingPost({
+    id: currentUser.value.id?.toString(),
+    userAvatar: avatarUrl,
+  })
+  if (res1.data.code === 200) {
+    message.success('用户信息更新成功！');
+    editMode.value = false;
+    await fetchUserProfile(); // 重新获取用户数据以更新页面显示
+  } else {
+    message.error('更新失败: ' + res1.data.message);
+  }
+
+  // 获取loginUserStore并修改userAvatar属性值
+  const loginUserStore = useLoginUserStore();
+  loginUserStore.loginUser.userAvatar = avatarUrl;
 };
 
 const saveProfile = async () => {
@@ -276,7 +300,7 @@ const saveProfile = async () => {
       });
     }
 
-    const res = await userUpdateMyUserUsingPost(updateData);
+    const res = await userEditUsingPost(updateData);
     if (res.data.code === 200) {
       message.success('用户信息更新成功！');
       editMode.value = false;

@@ -38,7 +38,12 @@
       </div>
     </div>
 
-    <PictureList :dataList="dataList" :loading="loading" @clickPicture="doClickPicture" @delete="handleDelete"></PictureList>
+    <PictureList
+      :dataList="dataList"
+      :loading="loading"
+      :onReload="fetchData"
+      showOp
+    />
     <a-pagination
       style="text-align: right"
       v-model:current="searchParams.current"

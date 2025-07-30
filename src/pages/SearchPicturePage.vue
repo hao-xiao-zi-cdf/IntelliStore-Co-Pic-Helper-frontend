@@ -55,6 +55,7 @@ const getOldPicture = async () => {
   if (id) {
     const res = await getPictureVoByIdUsingGet({
       id: id,
+      spaceId: route.query?.spaceId,
     })
     if (res.data.code === 200 && res.data.data) {
       const data = res.data.data

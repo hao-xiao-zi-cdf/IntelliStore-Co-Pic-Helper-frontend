@@ -30,7 +30,7 @@
         <SpaceUserAnalyze :spaceId="spaceId" :queryAll="queryAll" :queryPublic="queryPublic" />
       </a-col>
       <!-- 空间使用排行分析 -->
-      <a-col :xs="24" :md="12">
+      <a-col :xs="24" :md="12" v-if="spaceId == undefined">
         <SpaceRankAnalyze v-if="isAdmin" :spaceId="spaceId" :queryAll="queryAll" :queryPublic="queryPublic" />
       </a-col>
     </a-row>

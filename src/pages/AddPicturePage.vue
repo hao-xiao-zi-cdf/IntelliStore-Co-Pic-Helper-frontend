@@ -5,7 +5,7 @@
         {{ route.query?.id ? '修改图片' : '创建图片' }}
       </h2>
       <a-typography-paragraph v-if="spaceId" type="secondary">
-        保存至空间：<a :href="`/space/${spaceId}`" target="_blank">{{ spaceId }}</a>
+        保存至空间：<a :href="spaceId == 0 ? '/' : `/space/${spaceId}`" target="_blank">{{ spaceId == 0 ? '公共图库' : space?.spaceName }}</a>
       </a-typography-paragraph>
       <!-- 上传方式切换 -->
       <a-tabs v-model:activeKey="uploadType" class="upload-tabs">
@@ -121,41 +121,6 @@ const spaceId = computed(() => {
 })
 const loading = ref<boolean>(false)
 
-// // 确认裁剪
-// const handleConfirm = () => {
-//   cropperRef.value.getCropBlob((blob: Blob) => {
-//     const fileName = (props.picture?.name || 'image') + '.png'
-//     const file = new File([blob], fileName, { type: blob.type })
-//     // 上传图片
-//     handleUpload({ file })
-//   })
-// }
-
-/**
- * 上传
- * @param file
- */
-// const handleUpload = async ({ file }: any) => {
-//   loading.value = true
-//   try {
-//     const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
-//     params.spaceId = props.spaceId
-//     const res = await uploadPictureUsingPost(params, {}, file)
-//     if (res.data.code === 200 && res.data.data) {
-//       message.success('图片上传成功')
-//       // 将上传成功的图片信息传递给父组件
-//       props.onSuccess?.(res.data.data)
-//       closeModal();
-//     } else {
-//       message.error('图片上传失败，' + res.data.message)
-//     }
-//   } catch (error) {
-//     message.error('图片上传失败')
-//   } finally {
-//     loading.value = false
-//   }
-// }
-
 // 图片编辑弹窗引用
 const imageCropperRef = ref()
 
@@ -192,7 +157,10 @@ const handleSubmit = async (values: any) => {
   const res = await editPictureUsingPost({ id: pictureId, spaceId: spaceId.value, ...values })
   if (res.data.code === 200 && res.data.data) {
     message.success('创建成功')
-    router.push({ path: `/picture/${pictureId}` })
+    router.push({
+      path: `/picture/${pictureId}/${spaceId.value}`,
+      replace: true
+    })
   } else {
     message.error('创建失败，' + res.data.message)
   }

@@ -135,7 +135,7 @@ const doClickPicture = (picture) => {
 
 // 搜索图片
 const doSearchPicture = (picture) => {
-  window.open(`/picture/search?pictureId=${picture.id}`)
+  window.open(`/picture/search?pictureId=${picture.id}&spaceId=${picture.spaceId}`)
 }
 
 // 编辑图片
@@ -158,7 +158,7 @@ const doDeletePicture = async (picture) => {
   if (res.data.code === 200) {
     message.success('删除成功')
     // 删除成功，刷新列表
-    emit('delete', picture)
+    emit('reload')
   } else {
     message.error('删除失败')
   }

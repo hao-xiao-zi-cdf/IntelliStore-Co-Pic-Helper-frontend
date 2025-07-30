@@ -12,7 +12,7 @@
           + 创建图片
         </a-button>
         <a-button
-          v-if="canManageSpaceUser"
+          v-if="canManageSpaceUser && space.spaceType === SPACE_TYPE_ENUM.TEAM"
           type="primary"
           ghost
           :icon="h(TeamOutlined)"
@@ -62,7 +62,6 @@
       <color-picker format="hex" @pureColorChange="onColorChange" />
     </a-form-item>
     <!-- 图片列表 -->
-    <!-- 图片列表 -->
     <PictureList
       :dataList="dataList"
       :loading="loading"
@@ -92,7 +91,7 @@ import PictureSearchForm from '@/components/PictureSearchForm.vue'
 import { ColorPicker } from 'vue3-colorpicker'
 import BatchEditPictureModal from '@/components/BatchEditPictureModel.vue'
 import { EditOutlined, BarChartOutlined, TeamOutlined } from '@ant-design/icons-vue'
-import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '@/constants/spaceUser.ts'
+import { SPACE_PERMISSION_ENUM, SPACE_TYPE_ENUM, SPACE_TYPE_MAP } from '@/constants/spaceUser.ts'
 
 const props = defineProps<{
   id: string | number
